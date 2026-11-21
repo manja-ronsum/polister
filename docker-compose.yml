@@ -29,7 +29,34 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+  app:
+    image: node:20-bookworm
+    container_name: polister-app
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "4000:3000"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/polister_development?schema=public"
+      REDIS_URL: "redis://redis:6379"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      bash -c "yarn install &&
+               npx prisma generate &&
+               npx prisma db push --accept-data-loss &&
+               yarn user:create-admin &&
+               yarn boards:import-csv -f tsukuba-boards.csv --if-empty &&
+               yarn dev"
 volumes:
   postgres_data:
   redis_data:

@@ -25,6 +25,7 @@
     "db:generate": "prisma generate",
     "municipalities:sync": "tsx src/scripts/sync-municipalities.ts",
     "import:board-images": "tsx scripts/import-board-images.ts",
+    "boards:import-csv": "tsx src/scripts/import-csv.ts",
     "docs:dev": "cd docs && yarn start",
     "docs:build": "cd docs && yarn build",
     "docs:serve": "cd docs && yarn serve",
