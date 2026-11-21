@@ -91,12 +91,12 @@ yarn db:studio
 
 ### 主要テーブル
 
-#### boards（掲示板）
+#### boards（掲示場）
 
 ```sql
 CREATE TABLE boards (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  board_number INTEGER NOT NULL,
+  board_number TEXT,
   address TEXT NOT NULL,
   location GEOGRAPHY(POINT, 4326) NOT NULL,
   municipality_id UUID NOT NULL REFERENCES municipalities(id),
@@ -170,7 +170,7 @@ CREATE INDEX idx_verifications_board ON verifications(board_id);
 CREATE INDEX idx_verifications_user ON verifications(user_id);
 ```
 
-#### board_images（掲示板画像）
+#### board_images（掲示場画像）
 
 ```sql
 CREATE TABLE board_images (
@@ -209,7 +209,7 @@ CREATE INDEX idx_user_locations_municipality ON user_locations(municipality_id);
 ```prisma
 model Board {
   id             String     @id @default(uuid())
-  boardNumber    Int        @map("board_number")
+  boardNumber    String?    @map("board_number")
   address        String
   location       Unsupported("geography(POINT, 4326)")
   municipalityId String     @map("municipality_id")
@@ -261,7 +261,7 @@ yarn db:generate
 ### 基本的な空間クエリ
 
 ```sql
--- 特定地点から半径1km以内の掲示板を検索
+-- 特定地点から半径1km以内の掲示場を検索
 SELECT * FROM boards
 WHERE ST_DWithin(
   location::geography,
@@ -269,7 +269,7 @@ WHERE ST_DWithin(
   1000  -- メートル
 );
 
--- バウンディングボックス内の掲示板を検索
+-- バウンディングボックス内の掲示場を検索
 SELECT * FROM boards
 WHERE ST_Within(
   location,
@@ -280,7 +280,7 @@ WHERE ST_Within(
   )
 );
 
--- 市区町村ポリゴン内の掲示板を検索
+-- 市区町村ポリゴン内の掲示場を検索
 SELECT b.* FROM boards b
 JOIN municipalities m ON ST_Within(b.location, m.polygon)
 WHERE m.id = 'municipality-id';

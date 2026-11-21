@@ -1,5 +1,7 @@
 # Clean Architecture実装ガイド
 
+<!-- markdownlint-disable MD013 -->
+
 このドキュメントは、Polisterプロジェクトでのクリーンアーキテクチャ実装のガイドラインです。
 
 ## 概要
@@ -97,7 +99,7 @@ src/
 │   └── page.tsx
 │
 ├── features/                         # 機能別モジュール（バウンデッドコンテキスト）
-│   ├── board/                        # 掲示板管理コンテキスト
+│   ├── board/                        # 掲示場管理コンテキスト
 │   │   ├── domain/                   # ドメイン層（DDD Core）
 │   │   │   ├── aggregates/          # 集約ルート（Board集約）
 │   │   │   ├── entities/            # エンティティ
@@ -218,7 +220,7 @@ src/
 
 - イミュータブルな値型
 - バリデーションをコンストラクタで実施
-- 例: `BoardLocation`（緯度経度）、`BoardNumber`（掲示板番号）
+- 例: `BoardLocation`（緯度経度）、`BoardNumber`（掲示場番号）
 
 **ドメインサービス（Domain Services）**:
 
@@ -254,7 +256,7 @@ src/
 - **場所**: `src/features/<feature>/domain/`
 - **特徴**: 外部依存を持たない純粋なビジネスロジック
 - **Polisterでの例**:
-  - `features/board/domain/services/BoardValidationService`: 掲示板データのバリデーション
+  - `features/board/domain/services/BoardValidationService`: 掲示場データのバリデーション
   - `features/verification/domain/services/TrustLevelService`: 信頼度レベルの計算
   - `features/verification/domain/services/VerificationRuleService`: 検証ルールの判定
 
@@ -264,7 +266,7 @@ src/
 - **場所**: `src/features/<feature>/application/`
 - **特徴**: RepositoryとDomainServiceを組み合わせてビジネスユースケースを実現
 - **Polisterでの例**:
-  - `features/board/application/usecases/BoardManagementUseCase`: 掲示板データの登録・編集・削除
+  - `features/board/application/usecases/BoardManagementUseCase`: 掲示場データの登録・編集・削除
   - `features/verification/application/usecases/VerificationUseCase`: 地域ベース検証依頼と承認フロー
   - `features/import/application/usecases/DataImportUseCase`: CSV/KML一括インポート
   - `features/board/application/usecases/ActionBoardIntegrationUseCase`: アクションボード連携
@@ -275,7 +277,7 @@ src/
 - **場所**: `src/features/<feature>/infrastructure/` および `src/infrastructure/`（共有インフラ）
 - **特徴**: データベース、外部API、ファイルシステムなどの技術的詳細
 - **Polisterでの例**:
-  - `features/board/infrastructure/repositories/BoardRepository`: 掲示板データの永続化（PostgreSQL + PostGIS）
+  - `features/board/infrastructure/repositories/BoardRepository`: 掲示場データの永続化（PostgreSQL + PostGIS）
   - `features/municipality/infrastructure/repositories/MunicipalityRepository`: 市区町村データ管理
   - `infrastructure/external/geocoding/GeocodingService`: 住所→緯度経度変換（外部API）
   - `infrastructure/external/mapbox/MapboxService`: 地図タイル配信
@@ -287,10 +289,10 @@ src/
 - **場所**: `src/app/` および `src/features/<feature>/ui/`
 - **特徴**: Next.js App Router、React Components
 - **Polisterでの例**:
-  - `app/api/boards/`: 掲示板CRUD API
+  - `app/api/boards/`: 掲示場CRUD API
   - `app/api/verification/`: 検証・承認API
   - `app/api/import/`: データインポートAPI
-  - `features/board/ui/`: 掲示板関連UIコンポーネント
+  - `features/board/ui/`: 掲示場関連UIコンポーネント
   - `features/verification/ui/`: 検証関連UIコンポーネント
   - `shared/ui/Map/`: 共通地図コンポーネント
 
@@ -303,11 +305,11 @@ src/
 #### Repositoryインターフェース例
 
 ```typescript
-// src/features/board/infrastructure/repositories/IBoardRepository.ts
+// src/features/board/domain/repositories/IBoardRepository.ts
 import type { Board, BoardStatus, TrustLevel } from "@prisma/client";
 
 export interface CreateBoardData {
-  boardNumber: number;
+  boardNumber: string;
   address: string;
   latitude: number;
   longitude: number;
@@ -317,7 +319,7 @@ export interface CreateBoardData {
 }
 
 export interface UpdateBoardData {
-  boardNumber?: number;
+  boardNumber?: string;
   address?: string;
   latitude?: number;
   longitude?: number;
@@ -431,7 +433,7 @@ export class BoardRepository implements IBoardRepository {
 import { inject, injectable } from "tsyringe";
 
 import { TOKENS } from "@/shared/lib/di/tokens";
-import type { IBoardRepository } from "../../infrastructure/repositories/IBoardRepository";
+import type { IBoardRepository } from "../../domain/repositories/IBoardRepository";
 import type { IGeocodingService } from "@/infrastructure/external/geocoding/IGeocodingService";
 import {
   ValidationError,
@@ -455,7 +457,7 @@ export class BoardManagementUseCase {
 
   async createBoard(
     address: string,
-    boardNumber: number,
+    boardNumber: string,
     municipalityId: string,
     executorUserId: string
   ): Promise<BoardCreationResult> {
@@ -476,7 +478,7 @@ export class BoardManagementUseCase {
         };
       }
 
-      // 掲示板作成
+      // 掲示場作成
       const board = await this.boardRepository.create({
         boardNumber,
         address,
@@ -496,7 +498,7 @@ export class BoardManagementUseCase {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "掲示板の作成に失敗しました",
+          error instanceof Error ? error.message : "掲示場の作成に失敗しました",
       };
     }
   }
@@ -632,7 +634,7 @@ export const resolve = <T extends Token>(token: T): ResolveToken<T> => {
 
 ### 5. API Routeでの使用
 
-各バウンデッドコンテキストは `features/<context>/di/tokens.ts` のようにローカルなトークンを定義し、必要に応じて共有コンテナへ登録する。例では掲示板コンテキストのトークン (`BOARD_TOKENS`) を解決している。
+各バウンデッドコンテキストは `features/<context>/di/tokens.ts` のようにローカルなトークンを定義し、必要に応じて共有コンテナへ登録する。例では掲示場コンテキストのトークン (`BOARD_TOKENS`) を解決している。
 
 ```typescript
 // src/app/api/boards/route.ts
@@ -941,5 +943,7 @@ async createBoard(data: BoardData): Promise<OperationResult<Board>> {
 - ポイント連携機能
 
 ---
+
+<!-- markdownlint-restore -->
 
 最終更新: 2025年9月27日

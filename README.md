@@ -1,20 +1,20 @@
 # Polister
 
-**Politics + Poster = Polister**
+## Politics + Poster = Polister
 
-選挙ポスター掲示板の位置情報をデジタル化し、オープンデータとして提供するWebサービス
+選挙ポスター掲示場の位置情報をデジタル化し、オープンデータとして提供するWebサービス
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![CI](https://github.com/team-mirai-volunteer/polister/actions/workflows/ci.yml/badge.svg)](https://github.com/team-mirai-volunteer/polister/actions/workflows/ci.yml)
 
 ## 📖 概要
 
-Polisterは、全国の選挙ポスター掲示板の位置情報を管理・公開するプラットフォームです。
+Polisterは、全国の選挙ポスター掲示場の位置情報を管理・公開するプラットフォームです。
 
 ### 主な機能
 
 - 🗺️ **地図表示**: Mapbox GL JSによるインタラクティブな地図
-- 📍 **位置管理**: 掲示板の位置情報の登録・編集・検索
+- 📍 **位置管理**: 掲示場の位置情報の登録・編集・検索
 - ✅ **検証システム**: 地域ベースの検証依頼と自動承認
 - 📊 **データ品質**: 信頼度レベルによるデータ管理
 - 🔄 **データインポート**: CSV、Excel、KML形式の一括登録
@@ -48,19 +48,36 @@ yarn install
 # Next.jsアプリケーション
 yarn dev
 
-# ドキュメントサイト
-yarn docs:dev
+# ドキュメントサイト（Next.jsとポート競合を避けるため3100番を使用）
+PORT=3100 yarn docs:dev
 ```
 
-- アプリケーション: http://localhost:3000
-- ドキュメント: http://localhost:3000（docsディレクトリ内で起動）
+- アプリケーション: <http://localhost:3000>
+- ドキュメント: <http://localhost:3100（`PORT=3100> yarn docs:dev` で起動）
+
+### 環境変数
+
+`.env.example` をコピーして `.env` を作成し、以下の値を設定してください：
+
+- `NEXTAUTH_URL`: ローカル開発では `http://localhost:3000` を指定
+- `NEXTAUTH_SECRET`: `openssl rand -base64 32` などで生成したランダム文字列
+- 初期管理者作成時は `ADMIN_EMAIL` / `ADMIN_PASSWORD`（任意で `ADMIN_NAME`）をセットして `yarn user:create-admin` を実行
+
+サインインはメールアドレスとパスワードで行います。Google OAuth 連携は今後の実装予定です。
+
+```bash
+# 初期管理者アカウントの作成例
+ADMIN_EMAIL="admin@example.com" \
+ADMIN_PASSWORD="change-me" \
+yarn user:create-admin
+```
 
 ## 📚 ドキュメント
 
 詳細なドキュメントは以下で公開しています：
 
-- **オンライン**: https://team-mirai-volunteer.github.io/polister/
-- **ローカル**: `yarn docs:dev`で起動
+- **オンライン**: <https://team-mirai-volunteer.github.io/polister/>
+- **ローカル**: `PORT=3100 yarn docs:dev` で起動
 
 ### 主要ドキュメント
 
@@ -113,11 +130,11 @@ yarn docs:dev
 
 ### ディレクトリ構造
 
-```
+```text
 src/
 ├── app/              # Next.js App Router (Presentation層)
 ├── features/         # 機能別モジュール（バウンデッドコンテキスト）
-│   ├── board/        # 掲示板管理コンテキスト
+│   ├── board/        # 掲示場管理コンテキスト
 │   │   ├── domain/           # ドメイン層（DDD Core）
 │   │   │   ├── aggregates/   # 集約ルート
 │   │   │   ├── value-objects/# 値オブジェクト
@@ -193,7 +210,7 @@ yarn format       # フォーマット実行
 yarn validate     # 全チェック実行
 ```
 
-### ドキュメント
+### ドキュメントコマンド
 
 ```bash
 yarn docs:dev     # ドキュメントサーバー起動
@@ -207,6 +224,6 @@ yarn docs:serve   # ビルド済みドキュメント配信
 
 ## 🔗 リンク
 
-- **ドキュメント**: https://team-mirai-volunteer.github.io/polister/
-- **Issues**: https://github.com/team-mirai-volunteer/polister/issues
-- **Pull Requests**: https://github.com/team-mirai-volunteer/polister/pulls
+- **ドキュメント**: <https://team-mirai-volunteer.github.io/polister/>
+- **Issues**: <https://github.com/team-mirai-volunteer/polister/issues>
+- **Pull Requests**: <https://github.com/team-mirai-volunteer/polister/pulls>

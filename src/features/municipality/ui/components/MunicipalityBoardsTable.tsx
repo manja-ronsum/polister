@@ -1,7 +1,9 @@
 "use client";
 
+import { formatBoardNumberLabel } from "@/shared/domain/board/BoardNumber";
 import {
   Box,
+  Button,
   Chip,
   Table,
   TableBody,
@@ -10,6 +12,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import NextLink from "next/link";
 
 import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoardDTO";
 import {
@@ -25,13 +28,6 @@ interface MunicipalityBoardsTableProps {
   onSelectBoard?: (boardId: string) => void;
 }
 
-const formatBoardNumber = (boardNumber: number | null): string => {
-  if (boardNumber === null || Number.isNaN(boardNumber)) {
-    return "-";
-  }
-  return boardNumber.toString();
-};
-
 export const MunicipalityBoardsTable = ({
   boards,
   selectedBoardId,
@@ -40,14 +36,14 @@ export const MunicipalityBoardsTable = ({
   if (boards.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary">
-        掲示板情報は登録されていません。
+        掲示場情報は登録されていません。
       </Typography>
     );
   }
 
   return (
     <Box sx={{ height: "100%", overflowY: "auto" }}>
-      <Table size="small" stickyHeader aria-label="掲示板一覧">
+      <Table size="small" stickyHeader aria-label="掲示場一覧">
         <TableHead>
           <TableRow>
             <TableCell>番号</TableCell>
@@ -55,6 +51,7 @@ export const MunicipalityBoardsTable = ({
             <TableCell>住所</TableCell>
             <TableCell>状態</TableCell>
             <TableCell>信頼度</TableCell>
+            <TableCell>詳細</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -77,7 +74,7 @@ export const MunicipalityBoardsTable = ({
                 sx={{ cursor: "pointer" }}
               >
                 <TableCell width="80">
-                  {formatBoardNumber(board.boardNumber)}
+                  {formatBoardNumberLabel(board.boardNumber)}
                 </TableCell>
                 <TableCell width="200">{board.name ?? "名称未設定"}</TableCell>
                 <TableCell>{board.address}</TableCell>
@@ -97,6 +94,18 @@ export const MunicipalityBoardsTable = ({
                     color={TRUST_LEVEL_COLORS[board.trustLevel] ?? "info"}
                     variant="outlined"
                   />
+                </TableCell>
+                <TableCell width="120" sx={{ whiteSpace: "nowrap" }}>
+                  <Button
+                    component={NextLink}
+                    href={`/boards/${board.id}`}
+                    size="small"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                    }}
+                  >
+                    詳細を見る
+                  </Button>
                 </TableCell>
               </TableRow>
             );
